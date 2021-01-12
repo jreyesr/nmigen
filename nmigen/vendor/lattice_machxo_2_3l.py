@@ -160,7 +160,12 @@ class LatticeMachXO2Or3LPlatform(TemplatedPlatform):
         # relation to a user clock. To avoid this, a GSR/SGSR instance should be driven
         # synchronized to user clock.
         if name == "sync" and self.default_clk is not None:
-            clk_i = self.request(self.default_clk).i
+            using_osch = False
+            if self.default_clk == "OSCH":
+                using_osch = True
+                clk_i = Signal()
+            else:
+                clk_i = self.request(self.default_clk).i
             if self.default_rst is not None:
                 rst_i = self.request(self.default_rst).i
             else:
@@ -179,6 +184,8 @@ class LatticeMachXO2Or3LPlatform(TemplatedPlatform):
                 # more reliable. (None of this is documented.)
                 Instance("SGSR", i_CLK=clk_i, i_GSR=gsr1),
             ]
+            if using_osch:
+                m.submodules += [ Instance("OSCH", p_NOM_FREQ=2.08, i_STDBY=Const(0), o_OSC=clk_i, o_SEDSTDBY=Signal()) ]
             # GSR implicitly connects to every appropriate storage element. As such, the sync
             # domain is reset-less; domains driven by other clocks would need to have dedicated
             # reset circuitry or otherwise meet setup/hold constraints on their own.
