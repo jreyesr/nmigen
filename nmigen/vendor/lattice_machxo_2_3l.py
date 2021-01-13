@@ -161,6 +161,16 @@ class LatticeMachXO2Or3LPlatform(TemplatedPlatform):
         17.73, 19.00, 20.46, 22.17, 24.18, 26.60, 29.56, 33.25, 38.00, 44.33,
         53.20, 66.50, 88.67, 133.00
     ]
+    
+    @property
+    def default_clk_constraint(self):
+        # Internal high-speed oscillator on MachXO2/MachXO3L devices.
+        # It can have a range of frequencies. 
+        if self.default_clk == "OSCH":
+            assert self.osch_frequency in self._supported_osch_freqs
+            return Clock(int(self.osch_frequency * 1e6))
+        # Otherwise, use the defined Clock resource.
+        return super().default_clk_constraint
 
     def create_missing_domain(self, name):
         # Lattice MachXO2/MachXO3L devices have two global set/reset signals: PUR, which is driven at
